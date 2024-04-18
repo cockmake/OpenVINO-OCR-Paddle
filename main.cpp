@@ -22,7 +22,7 @@ vector<string> dict;
 
 Mat get_infer_mask(const Mat& src)
 {
-	//»ñÈ¡ÊäÈëÊı¾İ
+	//è·å–è¾“å…¥æ•°æ®
 	width_ratio = src.cols / static_cast<float>(w), height_ratio = src.rows / static_cast<float>(h);
 
 	Mat blobImg;
@@ -65,11 +65,11 @@ Mat get_infer_mask(const Mat& src)
 
 string get_text_ret(const Mat& src)
 {
-	//½øĞĞPaddleOCRµÄÔ¤´¦Àí
-	//ÎÄ×ÖÇøµÄÔ¤´¦ÀíĞèÒª×ö°´±ÈÀı·ÅËõ   ¸ÃÄ£ĞÍÖ»Ö§³Ö  ²»¼Ó±äÏòÆ÷ÎªºáÏòÎÄ±¾¼ì²â
+	//è¿›è¡ŒPaddleOCRçš„é¢„å¤„ç†
+	//æ–‡å­—åŒºçš„é¢„å¤„ç†éœ€è¦åšæŒ‰æ¯”ä¾‹æ”¾ç¼©   è¯¥æ¨¡å‹åªæ”¯æŒ  ä¸åŠ å˜å‘å™¨ä¸ºæ¨ªå‘æ–‡æœ¬æ£€æµ‹
 	Mat blobImg = Mat::zeros(Size(320, 32), CV_8UC3), src_clone = src.clone();
 	int src_clone_w = src_clone.cols, src_clone_h = src_clone.rows;
-	float ratio = src_clone_h / 32.0;    //¼ÙÉèÔ­±¾ÊäÈëµÄÎÄ×Ö¾ÍÊÇÕı³£ÎÄ×Ö(²»ÊİÒ²²»ÅÖ) Ö»ÊÇ²»·ûºÏ¼ì²âµÄÊäÈë
+	float ratio = src_clone_h / 32.0;    //å‡è®¾åŸæœ¬è¾“å…¥çš„æ–‡å­—å°±æ˜¯æ­£å¸¸æ–‡å­—(ä¸ç˜¦ä¹Ÿä¸èƒ–) åªæ˜¯ä¸ç¬¦åˆæ£€æµ‹çš„è¾“å…¥
 	Size sz = Size(src_clone_w / ratio, 32);
 	cv::resize(src_clone, src_clone, sz);
 	if (src_clone.cols <= 320) {
@@ -87,7 +87,7 @@ string get_text_ret(const Mat& src)
 	result[1] = (result[1] - 0.456) / 0.224;
 	result[2] = (result[2] - 0.406) / 0.225;
 	merge(result, blobImg);
-	//µ½´ËPaddleOCRµÄÊäÈëÔ¤´¦ÀíÍê³É
+	//åˆ°æ­¤PaddleOCRçš„è¾“å…¥é¢„å¤„ç†å®Œæˆ
 
 
 
@@ -123,7 +123,7 @@ string get_text_ret(const Mat& src)
 	return ret;
 }
 void init_model() {
-	//³õÊ¼»¯ÍÆÀíÇëÇó
+	//åˆå§‹åŒ–æ¨ç†è¯·æ±‚
 	Core ie;
 	String model_path = "D:\\GoogleDownload\\ch_PP-OCRv2_det_infer\\inference.pdmodel";
 	shared_ptr<Model> p_model = ie.read_model(model_path);
@@ -131,7 +131,7 @@ void init_model() {
 	CompiledModel compiledModel = ie.compile_model(p_model, "CPU");
 	inferRequest = compiledModel.create_infer_request();
 	
-	//»ñÈ¡ÊäÈëÊäÊä³öµÄShape
+	//è·å–è¾“å…¥è¾“è¾“å‡ºçš„Shape
 	inputTensor = inferRequest.get_input_tensor(0);
 	inputShape = inputTensor.get_shape();
 	c = inputShape[1];
@@ -172,8 +172,8 @@ vector<Rect> process_mask(Mat& ret) {
 	return boxs;
 }
 void init_dict() {
-	//¼ÓÔØ´Êµä
-	string dict_path = "C:\\Users\\make\\Desktop\\orc_dict.txt";
+	//åŠ è½½è¯å…¸
+	string dict_path = "C:\\Users\\make\\Desktop\\ocr_dict.txt";
 	dict.push_back("");
 	fstream file;
 	file.open(dict_path, ios::in);
@@ -189,15 +189,15 @@ void init_dict() {
 int main() {
 
 	init_dict();
-	init_model(); //¼ÓÔØ¼ì²âÄ£ĞÍ
-	init_model2(); //¼ÓÔØÊ¶±ğÄ£ĞÍ
+	init_model(); //åŠ è½½æ£€æµ‹æ¨¡å‹
+	init_model2(); //åŠ è½½è¯†åˆ«æ¨¡å‹
 	String img_path = "D:\\a.jpg";
 	Mat img = imread(img_path), ret;
 	time_point<steady_clock> start = steady_clock::now();
 	ret = get_infer_mask(img);
 	vector<Rect> boxs = process_mask(ret);
 	for (int i = 0; i < boxs.size(); i++) {
-		//¿ÉÒÔ¼Ó¸öÅĞ¶Ï ÊÇ·ñ¶Ô¸Ãbox¸²¸ÇµÄÇøÓò½øĞĞ´¦Àí
+		//å¯ä»¥åŠ ä¸ªåˆ¤æ–­ æ˜¯å¦å¯¹è¯¥boxè¦†ç›–çš„åŒºåŸŸè¿›è¡Œå¤„ç†
 		string a = get_text_ret(img(boxs[i]));
 		rectangle(img, boxs[i], Scalar(0, 0, 255), 2);
 		cout << a << endl;
